@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: solar-dispatch-api
+    env: node
+    plan: starter
+    buildCommand: yarn install --frozen-lockfile && yarn prisma:generate && yarn build && yarn prisma:migrate
+    startCommand: yarn start
+    healthCheckPath: /health
+    envVars:
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: JWT_EXPIRES_IN
+        value: 12h
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        sync: false
+      - key: LOG_LEVEL
+        value: info
+      - key: AUTH_RATE_LIMIT_MAX_REQUESTS
+        value: 100
