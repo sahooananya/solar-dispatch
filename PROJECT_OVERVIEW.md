@@ -25,11 +25,10 @@ The project was built as a full-stack TypeScript application and deployed using 
 
 ## 2. Project Links
 
-- **GitHub Repository:** [https://github.com/sahooananya/solar-dispatch](https://github.com/sahooananya/solar-dispatch)
-- **Live Frontend Application (Vercel):** [https://solar-dispatch-three.vercel.app](https://solar-dispatch-three.vercel.app)
-- **Live Backend API (Render):** [https://solar-dispatch.onrender.com](https://solar-dispatch.onrender.com)
-- **Backend Health Check:** [https://solar-dispatch.onrender.com/health](https://solar-dispatch.onrender.com)
-- **Video Demonstration:** to be added !!!
+- **GitHub Repository:** [Repo](https://github.com/sahooananya/solar-dispatch)
+- **Live Frontend Application (Vercel):** [Vercle](https://solar-dispatch-three.vercel.app)
+- **Live Backend API (Render):** [Render](https://solar-dispatch.onrender.com)
+- **Video Demonstration:** [Drive](https://drive.google.com/drive/folders/1F5HnbXgZm0BLownk2PKZGjIJ88K4jXZx?usp=drive_link)
 
 ---
 
@@ -526,30 +525,7 @@ The following flows were verified during development and deployment:
 
 ---
 
-## 16. Video Demonstration Outline
-
-The demonstration video should cover:
-
-1. Brief project introduction and business problem
-2. Technology stack and repository structure
-3. Login with the Admin account
-4. Dashboard overview
-5. Customer creation, search, detail view, and follow-up
-6. Product and inventory management
-7. Stock IN/OUT movement history
-8. Draft challan creation
-9. Confirmation and automatic stock deduction
-10. Insufficient-stock validation
-11. Challan cancellation and stock restoration
-12. Role-based access using Sales, Warehouse, or Accounts
-13. Backend health endpoint
-14. GitHub repository and Postman collection
-15. Deployment architecture and important technical decisions
-16. Known limitations and possible future improvements
-
----
-
-## 17. Conclusion
+## 16. Conclusion
 
 SolarDispatch demonstrates a complete full-stack business workflow using React, Express, TypeScript, PostgreSQL, Prisma, JWT authentication, validation, transactional stock handling, cloud deployment, and structured documentation.
 

@@ -32,15 +32,16 @@ The application still keeps the assignment's required terms and modules visible:
 
 ## Live Links
 
+## Live Deployment
 
+| Resource | Link |
+|---|---|
+| SolarDispatch Web Application | [Open live application](https://solar-dispatch-three.vercel.app) |
+| Backend REST API | [Open backend API](https://solar-dispatch.onrender.com) |
+| Backend Health Check | [Check API status](https://solar-dispatch.onrender.com/health) |
+| Postman Collection | [View Postman collection](postman/SolarDispatch.postman_collection.json) |
 
-| Resource | URL                                            |
-|---|------------------------------------------------|
-| Live frontend | `https://solar-dispatch-three.vercel.app`      |
-| Backend API | `https://solar-dispatch.onrender.com`          |
-| Health check | `https://solar-dispatch.onrender.com/health`    |
-| Postman collection | `postman/SolarDispatch.postman_collection.json` |
-
+> The backend is hosted on Render's free service, so the first request may take a short time while the server starts.
 ---
 
 ## Screenshots
@@ -127,26 +128,16 @@ The application still keeps the assignment's required terms and modules visible:
 ---
 
 ## Architecture
+## How SolarDispatch Works
 
 ```mermaid
 flowchart LR
-    U[Internal employee] -->|Uses browser| C[React + TypeScript client]
-    C -->|REST requests| A[Express + TypeScript API]
+    A[Employee] --> B[React Frontend]
+    B -->|REST API| C[Express Backend]
+    C --> D[(PostgreSQL Database)]
 
-    A --> AUTH[JWT authentication]
-    A --> RBAC[Role authorization]
-    A --> VAL[Zod validation]
-    A --> SVC[Business services]
-
-    SVC --> TX[Prisma transactions]
-    TX --> ORM[Prisma ORM]
-    ORM --> DB[(PostgreSQL)]
-
-    DB --> USERS[Users]
-    DB --> CUSTOMERS[Customers and follow-ups]
-    DB --> PRODUCTS[Products and stock]
-    DB --> MOVEMENTS[Stock movements]
-    DB --> CHALLANS[Challans and item snapshots]
+    C --> E[JWT Login and Role Checks]
+    C --> F[Prisma Stock Transactions]
 ```
 
 ### Request flow
