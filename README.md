@@ -1,185 +1,637 @@
 # SolarDispatch
 
-**Rooftop Solar Sales, Inventory and Dispatch Management** — a mini ERP + CRM operations portal for a rooftop solar equipment distributor and installation company. Built as a technical hiring assignment.
+**Rooftop Solar Sales, Inventory and Dispatch Management**
 
-Sales, warehouse, accounts and administrative employees can manage solar leads, customer follow-ups, site surveys, equipment inventory (panels, inverters, batteries, BOS) and delivery challans with atomic stock control.
+[![React](https://img.shields.io/badge/React-18-20232a?logo=react&logoColor=61dafb)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178c6?logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Express](https://img.shields.io/badge/Express-4-111111?logo=express&logoColor=white)](https://expressjs.com/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-15-4169e1?logo=postgresql&logoColor=white)](https://www.postgresql.org/)
+[![Prisma](https://img.shields.io/badge/Prisma-5-2d3748?logo=prisma&logoColor=white)](https://www.prisma.io/)
 
----
+SolarDispatch is a full-stack Mini ERP and CRM portal for a rooftop solar equipment distributor and installation business. It brings customer follow-ups, solar equipment inventory, stock movements and delivery challans into one internal system.
 
-## Tech stack
-
-| Layer      | Choice                                                              |
-|------------|---------------------------------------------------------------------|
-| Frontend   | React 18 · TypeScript · Vite 6 · React Router 6 · TanStack Query 5 · React Hook Form + Zod · Axios · Lucide · vanilla CSS with design tokens |
-| Backend    | Node 20 · TypeScript · Express 4 · Prisma 5 · Zod · JWT · bcryptjs · Pino · Helmet · CORS · express-rate-limit |
-| Database   | PostgreSQL 15 (local via Docker, production on Neon)                 |
-| Tooling    | client + server packages, Yarn 1.22.22, tsx (dev), Vitest + Supertest, Docker Compose, Render (API), Vercel (client) |
-
-**Why?** React + Express + PostgreSQL + Prisma is the exact stack mandated by the assignment. Prisma gives fully-typed queries and easy interactive transactions (crucial for atomic challan confirmation). Zod validates every request and shares schema logic between backend and frontend forms.
+This project was created for a full-stack developer case study. The main focus is not the size of the application, but the quality of the business flow, API design, database structure, role-based security and deployment setup.
 
 ---
 
-## Repository layout
+## Why SolarDispatch instead of a general CRM?
 
-```
-/app
-├── client/          Vite + React + TS frontend
-│   ├── src/{api,components,hooks,layouts,pages,styles,types}
-│   ├── vercel.json
-│   └── package.json
-├── server/          Express + Prisma + TS backend
-│   ├── src/{config,middlewares,modules/{auth,customer,product,challan,dashboard},routes,utils}
-│   ├── prisma/{schema.prisma,seed.ts,migrations}
-│   ├── render.yaml
-│   └── package.json
-├── postman/         Importable Postman collection
-├── docker-compose.yml
-└── memory/test_credentials.md
-```
+The assignment asked for an ERP and CRM system for a wholesale or distribution company. I could have built a general-purpose portal, but I wanted the project to have a clear business context instead of feeling like a collection of unrelated CRUD screens.
+
+Rooftop solar distribution fits the required modules naturally:
+
+- Sales teams manage solar leads, customer details and follow-ups.
+- Warehouse teams manage panels, inverters, batteries and other equipment.
+- Accounts teams can review customer and dispatch records.
+- Delivery challans connect sales activity with real stock movement.
+- Site-survey and system-capacity fields give the CRM a practical solar-industry context.
+
+The application still keeps the assignment's required terms and modules visible: customers, products, inventory, stock movements and sales challans. The solar domain adds purpose without changing the core requirements.
+
+---
+
+## Live Links
+
+
+
+| Resource | URL                                            |
+|---|------------------------------------------------|
+| Live frontend | `https://solar-dispatch-three.vercel.app`      |
+| Backend API | `https://solar-dispatch.onrender.com`          |
+| Health check | `https://solar-dispatch.onrender.com/health`    |
+| Postman collection | `postman/SolarDispatch.postman_collection.json` |
+
+---
+
+## Screenshots
+
+### Desktop
+
+<p align="center">
+  <img src="docs/screenshots/login-page.jpeg" alt="SolarDispatch login page" width="49%" />
+  <img src="docs/screenshots/dashboard.jpeg" alt="SolarDispatch operations dashboard" width="49%" />
+</p>
+
+### Mobile
+
+<p align="center">
+  <img src="docs/screenshots/mobile-sidebar.jpeg" alt="SolarDispatch mobile navigation" width="260" />
+  &nbsp;&nbsp;&nbsp;
+  <img src="docs/screenshots/mobile-customers.jpeg" alt="SolarDispatch mobile customer list" width="260" />
+</p>
+
+---
+
+## Core Features
+
+### Authentication and roles
+
+- JWT-based login
+- Password hashing with bcryptjs
+- Backend-enforced role permissions
+- Four internal roles: Admin, Sales, Warehouse and Accounts
+
+### Customer CRM
+
+- Add and edit customers
+- Search and filter customer records
+- Customer type and status tracking
+- Solar-specific project information
+- Follow-up dates, notes and history
+- Customer detail view with related records
+
+### Solar equipment and inventory
+
+- Add and edit solar equipment
+- Track SKU, category, price, stock and warehouse location
+- Minimum-stock alert quantity
+- Manual IN and OUT stock adjustments
+- Product-level and global stock-movement history
+- Low-stock dashboard alerts
+
+### Delivery challans
+
+- Select a customer and add multiple products
+- Automatically generate a challan number
+- Save as Draft or Confirmed
+- Prevent zero or negative quantities
+- Prevent stock from going below zero
+- Preserve product name, SKU, category and price snapshots
+- Cancel confirmed challans and restore stock
+- Print or save an A4 challan as PDF through the browser
+
+### Dashboard
+
+- Solar leads and active customers
+- Follow-ups due today
+- Upcoming site surveys
+- Estimated pipeline capacity
+- Equipment SKU count
+- Low-stock item count
+- Confirmed dispatches
+- Recent challans and stock movements
+
+---
+
+## Technology Stack
+
+| Area | Technologies |
+|---|---|
+| Frontend | React 18, TypeScript, Vite, React Router DOM, Axios, TanStack Query, React Hook Form, Zod, Lucide React, vanilla CSS |
+| Backend | Node.js, Express.js, TypeScript, Prisma ORM, Zod, JWT, bcryptjs, Pino, Helmet, CORS, express-rate-limit |
+| Database | PostgreSQL 15 |
+| Local development | Yarn, Docker Compose |
+| Testing | Vitest and Supertest |
+| Deployment | Vercel, Render and Neon PostgreSQL |
 
 ---
 
 ## Architecture
 
-```
-Browser  ─►  Vite (client, port 3000)  ─►  /api  ─►  Express (server, 8001)
-                                                          │
-                                                          ├── Zod validation
-                                                          ├── JWT auth + role authorize
-                                                          ├── Services (business logic)
-                                                          └── Prisma ─►  PostgreSQL
+```mermaid
+flowchart LR
+    U[Internal employee] -->|Uses browser| C[React + TypeScript client]
+    C -->|REST requests| A[Express + TypeScript API]
+
+    A --> AUTH[JWT authentication]
+    A --> RBAC[Role authorization]
+    A --> VAL[Zod validation]
+    A --> SVC[Business services]
+
+    SVC --> TX[Prisma transactions]
+    TX --> ORM[Prisma ORM]
+    ORM --> DB[(PostgreSQL)]
+
+    DB --> USERS[Users]
+    DB --> CUSTOMERS[Customers and follow-ups]
+    DB --> PRODUCTS[Products and stock]
+    DB --> MOVEMENTS[Stock movements]
+    DB --> CHALLANS[Challans and item snapshots]
 ```
 
-- All routes prefixed with `/api`, JSON responses use `{ success, data, pagination?, error? }`.
-- Every write that mutates inventory (stock adjustment, challan confirmation, confirmed-challan cancellation) runs inside a Prisma interactive transaction with a conditional `updateMany({ where: { currentStock: { gte: qty } } })` so inventory can never become negative.
-- JWT middleware attaches `{ sub, role }` to `req.user`; `authorize(...roles)` enforces backend-level RBAC (frontend button-hiding is decorative).
+### Request flow
+
+1. The React client sends a request to the Express REST API.
+2. Authentication middleware verifies the JWT.
+3. Role middleware checks whether the user can perform the requested action.
+4. Zod validates route parameters, query values and request bodies.
+5. Service functions apply the business rules.
+6. Prisma reads or updates PostgreSQL.
+7. Inventory-changing operations run inside database transactions.
 
 ---
 
-## Local setup
+## Important Business Logic
 
-Prerequisites: Node 20+, Yarn 1.22.22 (available through Corepack), Docker.
-Both package lockfiles were generated with Yarn 1.22.22; use `--frozen-lockfile`
-in CI and deployment environments.
+### Draft challan
+
+Saving a challan as Draft creates the challan and its item snapshots, but does not reduce stock.
+
+### Confirmed challan
+
+When a challan is confirmed, the server:
+
+1. Rechecks the challan status.
+2. Validates all requested quantities.
+3. Uses guarded stock updates so inventory cannot become negative.
+4. Creates an OUT stock-movement record for each item.
+5. Changes the challan status to Confirmed.
+6. Commits all changes together.
+
+If one product has insufficient stock, the complete operation is rolled back and the API returns `409 Conflict`.
+
+### Cancelled challan
+
+Cancelling a confirmed challan restores the deducted quantities and creates IN reversal movements. The status check, stock restoration, movement creation and challan update are handled in one transaction so stock cannot be restored twice.
+
+### Product snapshots
+
+Each challan item stores product snapshot fields. Historical challans therefore remain accurate even if the current product name, SKU, category or unit price changes later.
+
+---
+
+## Role Permission Matrix
+
+| Capability | Admin | Sales | Warehouse | Accounts |
+|---|:---:|:---:|:---:|:---:|
+| View dashboard | Yes | Yes | Yes | Yes |
+| View customers | Yes | Yes | Yes | Yes |
+| Add or edit customers | Yes | Yes | No | No |
+| Add customer follow-ups | Yes | Yes | No | No |
+| View products and stock | Yes | Yes | Yes | Yes |
+| Add or edit products | Yes | No | Yes | No |
+| Record manual stock movements | Yes | No | Yes | No |
+| View stock-movement history | Yes | Yes | Yes | Yes |
+| Create or edit draft challans | Yes | Yes | No | No |
+| Confirm or cancel challans | Yes | Yes | No | No |
+| View and print challans | Yes | Yes | Yes | Yes |
+
+The Express API enforces these rules. Frontend button visibility is only an additional usability layer.
+
+---
+
+## Project Structure
+
+```text
+solar-dispatch/
+├── client/
+│   ├── src/
+│   │   ├── api/
+│   │   ├── components/
+│   │   ├── hooks/
+│   │   ├── layouts/
+│   │   ├── pages/
+│   │   ├── styles/
+│   │   └── types/
+│   ├── .env.example
+│   ├── vercel.json
+│   └── package.json
+├── server/
+│   ├── prisma/
+│   │   ├── migrations/
+│   │   ├── schema.prisma
+│   │   └── seed.ts
+│   ├── src/
+│   │   ├── config/
+│   │   ├── middlewares/
+│   │   ├── modules/
+│   │   ├── routes/
+│   │   └── utils/
+│   ├── .env.example
+│   ├── render.yaml
+│   └── package.json
+├── docs/
+│   └── screenshots/
+├── postman/
+│   └── SolarDispatch.postman_collection.json
+├── docker-compose.yml
+└── README.md
+```
+
+---
+
+## Database Models
+
+- `User`
+- `Customer`
+- `CustomerFollowUp`
+- `Product`
+- `StockMovement`
+- `SalesChallan`
+- `SalesChallanItem`
+
+Prisma migrations are stored in `server/prisma/migrations/` and should be committed to the repository.
+
+---
+
+## Local Setup
+
+### Prerequisites
+
+- Node.js 20 or newer
+- Yarn
+- Docker Desktop
+
+### 1. Clone the repository
 
 ```bash
-# 1. Start PostgreSQL
+git clone https://github.com/YOUR_USERNAME/solar-dispatch.git
+cd solar-dispatch
+```
+
+### 2. Start PostgreSQL
+
+```bash
 docker compose up -d
+docker compose ps
+```
 
-# 2. Server
+### 3. Configure and start the backend
+
+```bash
 cd server
-yarn install
-cp .env.example .env       # tweak DATABASE_URL / JWT_SECRET
+yarn install --frozen-lockfile
+cp .env.example .env
 yarn prisma:generate
-yarn prisma:migrate        # applies committed migrations
-yarn prisma:seed           # seeds 4 users, 8 customers, 12 products, 3 challans
-yarn dev                   # http://localhost:8001
+yarn prisma:migrate
+yarn prisma:seed
+yarn dev
+```
 
-# 3. Client (new terminal)
+The backend runs at:
+
+```text
+http://localhost:8001
+```
+
+Health check:
+
+```text
+http://localhost:8001/health
+```
+
+### 4. Configure and start the frontend
+
+Open a second terminal:
+
+```bash
+cd client
+yarn install --frozen-lockfile
+cp .env.example .env
+yarn dev
+```
+
+The frontend runs at:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## Environment Variables
+
+### `server/.env`
+
+```env
+DATABASE_URL=postgresql://postgres:postgres@localhost:5432/solardispatch
+JWT_SECRET=replace-with-a-long-random-secret
+JWT_EXPIRES_IN=12h
+PORT=8001
+NODE_ENV=development
+CLIENT_URL=http://localhost:3000
+LOG_LEVEL=info
+AUTH_RATE_LIMIT_MAX_REQUESTS=100
+```
+
+### `client/.env`
+
+```env
+VITE_API_BASE_URL=http://localhost:8001
+```
+
+The client appends `/api` to the configured backend URL. Do not include `/api` twice.
+
+Never commit real `.env` files or production secrets.
+
+---
+
+## Demo Accounts
+
+The seed script creates the following demo-only users:
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@demo.solardispatch.test` | `SolarAdmin@123` |
+| Sales | `sales@demo.solardispatch.test` | `SolarSales@123` |
+| Warehouse | `warehouse@demo.solardispatch.test` | `SolarWarehouse@123` |
+| Accounts | `accounts@demo.solardispatch.test` | `SolarAccounts@123` |
+
+Do not run the demo seed against a real production database containing user data.
+
+---
+
+## Available Commands
+
+### Backend
+
+```bash
+cd server
+
+yarn dev
+yarn typecheck
+yarn lint
+yarn test
+yarn build
+yarn start
+
+yarn prisma:generate
+yarn prisma:migrate
+yarn prisma:migrate:dev
+yarn prisma:seed
+yarn prisma:studio
+```
+
+### Frontend
+
+```bash
+cd client
+
+yarn dev
+yarn typecheck
+yarn lint
+yarn build
+yarn preview
+```
+
+---
+
+## API Overview
+
+All business endpoints are prefixed with `/api`.
+
+### Authentication
+
+| Method | Endpoint | Access |
+|---|---|---|
+| `POST` | `/api/auth/login` | Public |
+| `GET` | `/api/auth/me` | Authenticated |
+
+### Customers
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/customers` | Search, filter and paginate customers |
+| `POST` | `/api/customers` | Create customer |
+| `GET` | `/api/customers/:id` | View customer details |
+| `PATCH` | `/api/customers/:id` | Update customer |
+| `GET` | `/api/customers/:id/follow-ups` | View follow-up history |
+| `POST` | `/api/customers/:id/follow-ups` | Add follow-up note |
+
+### Products and inventory
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/products` | Search, filter and paginate products |
+| `POST` | `/api/products` | Create product |
+| `GET` | `/api/products/:id` | View product details |
+| `PATCH` | `/api/products/:id` | Update product |
+| `GET` | `/api/products/:id/movements` | View product movement history |
+| `POST` | `/api/products/:id/movements` | Record manual stock adjustment |
+| `GET` | `/api/stock-movements` | View global movement history |
+
+### Challans
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/challans` | Search, filter and paginate challans |
+| `POST` | `/api/challans` | Create challan |
+| `GET` | `/api/challans/:id` | View challan details |
+| `PATCH` | `/api/challans/:id` | Edit draft challan |
+| `POST` | `/api/challans/:id/confirm` | Confirm and reduce stock |
+| `POST` | `/api/challans/:id/cancel` | Cancel and restore stock where required |
+
+### Dashboard and health
+
+| Method | Endpoint | Purpose |
+|---|---|---|
+| `GET` | `/api/dashboard/summary` | Role-aware dashboard data |
+| `GET` | `/health` | Backend health check |
+
+---
+
+## Postman Collection
+
+Import:
+
+```text
+postman/SolarDispatch.postman_collection.json
+```
+
+The collection contains variables for:
+
+- `baseUrl`
+- `authToken`
+- `customerId`
+- `productId`
+- `challanId`
+
+Login requests can store the returned JWT in the collection-level `authToken` variable.
+
+---
+
+## Testing and Verification
+
+Run backend tests:
+
+```bash
+cd server
+yarn test
+```
+
+Run all static checks and builds:
+
+```bash
+cd server
+yarn prisma:generate
+yarn typecheck
+yarn lint
+yarn build
+
 cd ../client
-yarn install
-cp .env.example .env       # VITE_API_BASE_URL=http://localhost:8001
-yarn dev                   # http://localhost:3000
+yarn typecheck
+yarn lint
+yarn build
 ```
 
-The client appends `/api` to `VITE_API_BASE_URL`, so the example configuration calls
-`http://localhost:8001/api`. If the variable is unset, Vite proxies the relative `/api`
-path to the local backend. The seed command resets application data and refuses to run
-when `NODE_ENV=production` unless `ALLOW_PRODUCTION_SEED=true` is explicitly set.
+Important workflow cases include:
 
-### Environment variables
-
-**server/.env**
-
-| Var | Description |
-|-----|-------------|
-| `DATABASE_URL` | PostgreSQL connection string |
-| `JWT_SECRET` | Long random string (>= 16 chars) |
-| `JWT_EXPIRES_IN` | e.g. `12h` |
-| `PORT` | API port (default `8001`) |
-| `NODE_ENV` | `development` / `production` |
-| `CLIENT_URL` | Allowed CORS origin (comma-separated or `*`) |
-| `LOG_LEVEL` | Pino level |
-| `AUTH_RATE_LIMIT_MAX_REQUESTS` | Login attempts allowed per 15-minute window (default `100`) |
-
-**client/.env**
-
-| Var | Description |
-|-----|-------------|
-| `VITE_API_BASE_URL` | e.g. `http://localhost:8001`. Client suffixes `/api` automatically. Leave blank in same-origin/proxy deployments. |
+- draft challan does not change stock
+- confirmed challan reduces stock
+- insufficient stock returns `409 Conflict`
+- failed confirmation rolls back all changes
+- cancellation restores stock once
+- Accounts cannot confirm or cancel challans
+- Sales cannot manually adjust inventory
 
 ---
 
-## Demo credentials
+## Docker
 
-| Role      | Email                                    | Password           |
-|-----------|------------------------------------------|--------------------|
-| ADMIN     | admin@demo.solardispatch.test            | SolarAdmin@123     |
-| SALES     | sales@demo.solardispatch.test            | SolarSales@123     |
-| WAREHOUSE | warehouse@demo.solardispatch.test        | SolarWarehouse@123 |
-| ACCOUNTS  | accounts@demo.solardispatch.test         | SolarAccounts@123  |
+The current Docker Compose setup provides PostgreSQL for local development.
 
-These are demonstration accounts only.
+Start the database:
 
----
-
-## Role permission matrix (backend-enforced)
-
-| Capability                                | ADMIN | SALES | WAREHOUSE | ACCOUNTS |
-|-------------------------------------------|:-----:|:-----:|:---------:|:--------:|
-| View dashboard / customers / products / challans | ✅ | ✅ | ✅ | ✅ |
-| Create / edit customers                   |  ✅  |  ✅  |     ❌    |    ❌    |
-| Add customer follow-ups                   |  ✅  |  ✅  |     ❌    |    ❌    |
-| Create / edit products                    |  ✅  |  ❌  |     ✅    |    ❌    |
-| Adjust stock (IN / OUT movements)         |  ✅  |  ❌  |     ✅    |    ❌    |
-| Create / edit challans                    |  ✅  |  ✅  |     ❌    |    ❌    |
-| Confirm / cancel challans                 |  ✅  |  ✅  |     ❌    |    ❌    |
-| Print / view challan documents            |  ✅  |  ✅  |     ✅    |    ✅    |
-
-Unauthenticated → `401`, wrong-role → `403`.
-
----
-
-## REST API map
-
-```
-POST   /api/auth/login             GET    /api/auth/me
-GET    /api/dashboard/summary
-GET    /api/customers              POST   /api/customers
-GET    /api/customers/:id          PATCH  /api/customers/:id
-GET    /api/customers/:id/follow-ups
-POST   /api/customers/:id/follow-ups
-GET    /api/products               POST   /api/products
-GET    /api/products/:id           PATCH  /api/products/:id
-GET    /api/products/:id/movements POST   /api/products/:id/movements
-GET    /api/stock-movements
-GET    /api/challans               POST   /api/challans
-GET    /api/challans/:id           PATCH  /api/challans/:id
-POST   /api/challans/:id/confirm   POST   /api/challans/:id/cancel
-GET    /health
+```bash
+docker compose up -d
 ```
 
-Response envelope: `{ success: true, data, pagination? }` on success; `{ success: false, error: { code, message, fieldErrors } }` on failure. See `postman/SolarDispatch.postman_collection.json` for full examples.
+Stop it:
+
+```bash
+docker compose down
+```
+
+Reset the local database volume:
+
+```bash
+docker compose down -v
+```
+
+`docker compose down -v` permanently removes the local Docker database volume.
 
 ---
 
 ## Deployment
 
-- **Frontend (Vercel)** — root: `client/`, build: `yarn build`, output: `dist`. `client/vercel.json` handles SPA rewrites. Set `VITE_API_BASE_URL` to the Render API URL.
-- **Backend (Render)** — see `server/render.yaml`. Build: `yarn install && yarn prisma:generate && yarn build && yarn prisma:migrate`. Start: `yarn start`. Health path: `/health`. Configure `DATABASE_URL`, `JWT_SECRET`, `CLIENT_URL`.
-- **Database (Neon)** — create a project, copy the pooled connection URL into `DATABASE_URL`, run `yarn prisma:migrate` during Render deploy.
+### Database: Neon PostgreSQL
 
-Migrations are declarative — Prisma applies pending migrations on every production deploy via `prisma migrate deploy`.
+1. Create a Neon project.
+2. Copy its PostgreSQL connection string.
+3. Set it as `DATABASE_URL` in Render.
+4. Apply committed migrations using Prisma's production migration command.
+5. Seed only when you intentionally want the demo accounts and demo data.
+
+### Backend: Render
+
+Use the `server/` directory as the service root.
+
+Required environment variables:
+
+```text
+DATABASE_URL
+JWT_SECRET
+JWT_EXPIRES_IN
+NODE_ENV=production
+CLIENT_URL
+LOG_LEVEL
+AUTH_RATE_LIMIT_MAX_REQUESTS
+```
+
+Recommended health path:
+
+```text
+/health
+```
+
+The production build should generate Prisma Client, compile TypeScript and apply committed migrations. The application must use Render's `PORT` environment variable.
+
+### Frontend: Vercel
+
+Use the `client/` directory as the project root.
+
+Set:
+
+```env
+VITE_API_BASE_URL=https://your-render-service.onrender.com
+```
+
+After Vercel provides the final frontend URL, set the same URL as `CLIENT_URL` on Render and redeploy the backend so CORS accepts it.
 
 ---
 
-## Postman
+## Assumptions
 
-Import `postman/SolarDispatch.postman_collection.json`. It ships with variables (`baseUrl`, `token`, `customerId`, `productId`, `challanId`) and a login test-script that auto-captures the JWT.
+- SolarDispatch is an internal employee portal; customers do not log in.
+- The current stock value represents available warehouse quantity.
+- A Draft challan does not reserve inventory.
+- Challan confirmation is the main outbound stock event in the current scope.
+- Browser print and Save as PDF are sufficient for the assignment.
+- Purchase orders, quotations, invoices and payments are outside the required core scope.
 
 ---
 
-## Known limitations / future enhancements
+## Known Limitations
 
-- Automated Vitest + Supertest suite is scaffolded but not exhaustive.
-- Quotation and invoicing modules, technician assignments, per-serial-number tracking, and S3 product images are intentionally out of scope for this milestone.
+- No password reset or email-verification flow
+- No email or SMS notifications
+- No product serial-number tracking
+- No purchase-order or supplier module
+- No quotation, invoice or payment module
+- No product-image upload
+- Reporting is limited to the current operational dashboard
+- Offset pagination may need to be replaced for very large datasets
+
+These items are intentionally listed as limitations rather than presented as completed features.
+
+---
+
+## Possible Future Improvements
+
+- Quotation and invoice workflow
+- Purchase orders and supplier records
+- Installation scheduling
+- Technician assignments
+- Warranty and service tickets
+- Payment tracking
+- Product serial-number management
+- AWS S3 product-image storage
+- More detailed sales and inventory reports
+
+---
+
+## Author
+
+**Ananya Sahoo**  
+Full-stack developer case study submission
+
