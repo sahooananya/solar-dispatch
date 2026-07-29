@@ -1,8 +1,8 @@
 # SolarDispatch: Project Submission Summary
 
 **Submission by:**
-- **Name:** [ANANYA SAHOO]
-- **Roll Number:** [22051575]
+- **Name:** ANANYA SAHOO
+- **Roll Number:** 22051575
 
 ---
 
@@ -29,7 +29,7 @@ The project was built as a full-stack TypeScript application and deployed using 
 - **Live Frontend Application (Vercel):** [https://solar-dispatch-three.vercel.app](https://solar-dispatch-three.vercel.app)
 - **Live Backend API (Render):** [https://solar-dispatch.onrender.com](https://solar-dispatch.onrender.com)
 - **Backend Health Check:** [https://solar-dispatch.onrender.com/health](https://solar-dispatch.onrender.com)
-- **Video Demonstration:** [ADD VIDEO LINK AFTER UPLOADING]
+- **Video Demonstration:** to be added !!!
 
 ---
 
