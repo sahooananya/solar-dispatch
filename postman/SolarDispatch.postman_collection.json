@@ -1,0 +1,72 @@
+{
+  "info": {
+    "name": "SolarDispatch API",
+    "description": "Full REST API for SolarDispatch — Rooftop Solar Sales, Inventory & Dispatch. Set {{baseUrl}} and log in to auto-populate {{token}}.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8001" },
+    { "key": "token", "value": "" },
+    { "key": "customerId", "value": "" },
+    { "key": "productId", "value": "" },
+    { "key": "challanId", "value": "" }
+  ],
+  "item": [
+    { "name": "Health", "request": { "method": "GET", "url": "{{baseUrl}}/health" } },
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login Admin",
+          "event": [{ "listen": "test", "script": { "exec": ["const j=pm.response.json(); if(j.success){ pm.collectionVariables.set('token', j.data.token); }"], "type": "text/javascript" } }],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "url": "{{baseUrl}}/api/auth/login",
+            "body": { "mode": "raw", "raw": "{\n  \"email\": \"admin@demo.solardispatch.test\",\n  \"password\": \"SolarAdmin@123\"\n}" }
+          }
+        },
+        { "name": "Login Sales", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\"email\":\"sales@demo.solardispatch.test\",\"password\":\"SolarSales@123\"}" } } },
+        { "name": "Login Warehouse", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\"email\":\"warehouse@demo.solardispatch.test\",\"password\":\"SolarWarehouse@123\"}" } } },
+        { "name": "Login Accounts", "request": { "method": "POST", "header": [{ "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/auth/login", "body": { "mode": "raw", "raw": "{\"email\":\"accounts@demo.solardispatch.test\",\"password\":\"SolarAccounts@123\"}" } } },
+        { "name": "Me", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/auth/me" } }
+      ]
+    },
+    { "name": "Dashboard Summary", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/dashboard/summary" } },
+    {
+      "name": "Customers",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/customers?page=1&limit=10" } },
+        { "name": "Search", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/customers?search=iyer&status=ACTIVE" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/customers", "body": { "mode": "raw", "raw": "{\n  \"customerName\": \"Test Lead\",\n  \"mobileNumber\": \"9999900000\",\n  \"email\": \"test@example.com\",\n  \"address\": \"221B Baker Street, Mumbai\",\n  \"customerType\": \"RETAIL\",\n  \"status\": \"LEAD\",\n  \"propertyType\": \"RESIDENTIAL\",\n  \"estimatedSystemCapacityKw\": 5\n}" } } },
+        { "name": "Get by ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/customers/{{customerId}}" } },
+        { "name": "Update", "request": { "method": "PATCH", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/customers/{{customerId}}", "body": { "mode": "raw", "raw": "{\"status\": \"ACTIVE\"}" } } },
+        { "name": "Add Follow-up", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/customers/{{customerId}}/follow-ups", "body": { "mode": "raw", "raw": "{\"note\":\"Called client\",\"followUpType\":\"CALL\",\"nextFollowUpDate\":\"2026-03-15\"}" } } },
+        { "name": "List Follow-ups", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/customers/{{customerId}}/follow-ups" } }
+      ]
+    },
+    {
+      "name": "Products",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/products?page=1&limit=10" } },
+        { "name": "Low Stock", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/products?lowStock=true" } },
+        { "name": "Create", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/products", "body": { "mode": "raw", "raw": "{\n  \"productName\": \"330W Poly Panel\",\n  \"sku\": \"PANEL-POLY-330\",\n  \"category\": \"SOLAR_PANEL\",\n  \"unitPrice\": 8500,\n  \"currentStock\": 50,\n  \"minimumStockAlertQuantity\": 10,\n  \"warehouseLocation\": \"WH-A3\"\n}" } } },
+        { "name": "Adjust Stock IN", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/products/{{productId}}/movements", "body": { "mode": "raw", "raw": "{\"movementType\":\"IN\",\"quantity\":20,\"reason\":\"Purchase order PO-2026-030\"}" } } },
+        { "name": "Adjust Stock OUT", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/products/{{productId}}/movements", "body": { "mode": "raw", "raw": "{\"movementType\":\"OUT\",\"quantity\":5,\"reason\":\"Damaged in transit\"}" } } },
+        { "name": "Movements", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/products/{{productId}}/movements" } },
+        { "name": "All Stock Movements", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/stock-movements?page=1&limit=20" } }
+      ]
+    },
+    {
+      "name": "Challans",
+      "item": [
+        { "name": "List", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/challans" } },
+        { "name": "Create Draft", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/challans", "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"deliveryAddress\": \"Site A, Pune\",\n  \"installationSiteName\": \"Rooftop A\",\n  \"proposedSystemCapacityKw\": 5,\n  \"items\": [ { \"productId\": \"{{productId}}\", \"quantity\": 5 } ]\n}" } } },
+        { "name": "Get by ID", "request": { "method": "GET", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/challans/{{challanId}}" } },
+        { "name": "Confirm", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/challans/{{challanId}}/confirm" } },
+        { "name": "Insufficient stock example (huge qty)", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }, { "key": "Content-Type", "value": "application/json" }], "url": "{{baseUrl}}/api/challans", "body": { "mode": "raw", "raw": "{\n  \"customerId\": \"{{customerId}}\",\n  \"deliveryAddress\": \"Test\",\n  \"items\": [ { \"productId\": \"{{productId}}\", \"quantity\": 999999 } ]\n}" } } },
+        { "name": "Cancel", "request": { "method": "POST", "header": [{ "key": "Authorization", "value": "Bearer {{token}}" }], "url": "{{baseUrl}}/api/challans/{{challanId}}/cancel" } }
+      ]
+    }
+  ]
+}
