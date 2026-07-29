@@ -1,0 +1,205 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  SALES
+  WAREHOUSE
+  ACCOUNTS
+}
+
+enum CustomerType {
+  RETAIL
+  WHOLESALE
+  DISTRIBUTOR
+}
+
+enum CustomerStatus {
+  LEAD
+  ACTIVE
+  INACTIVE
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  COMMERCIAL
+  INDUSTRIAL
+}
+
+enum ProductCategory {
+  SOLAR_PANEL
+  INVERTER
+  BATTERY
+  MOUNTING_STRUCTURE
+  DC_CABLE
+  AC_CABLE
+  COMBINER_BOX
+  PROTECTION_DEVICE
+  CONNECTOR
+  METER
+  OTHER
+}
+
+enum MovementType {
+  IN
+  OUT
+}
+
+enum ChallanStatus {
+  DRAFT
+  CONFIRMED
+  CANCELLED
+}
+
+model User {
+  id             String   @id @default(cuid())
+  name           String
+  email          String   @unique
+  passwordHash   String
+  role           UserRole
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  followUps      CustomerFollowUp[]
+  movements      StockMovement[]
+  challans       SalesChallan[]
+}
+
+model Customer {
+  id                             String         @id @default(cuid())
+  customerName                   String
+  mobileNumber                   String
+  email                          String?
+  businessName                   String?
+  gstNumber                      String?
+  customerType                   CustomerType   @default(RETAIL)
+  address                        String
+  status                         CustomerStatus @default(LEAD)
+  followUpDate                   DateTime?
+  notes                          String?
+
+  propertyType                   PropertyType?
+  averageMonthlyElectricityBill  Decimal?       @db.Decimal(12, 2)
+  estimatedSystemCapacityKw      Decimal?       @db.Decimal(10, 2)
+  roofType                       String?
+  siteSurveyDate                 DateTime?
+  installationAddress            String?
+  leadSource                     String?
+
+  createdAt                      DateTime       @default(now())
+  updatedAt                      DateTime       @updatedAt
+
+  followUps                      CustomerFollowUp[]
+  challans                       SalesChallan[]
+
+  @@index([customerType])
+  @@index([status])
+  @@index([mobileNumber])
+}
+
+model CustomerFollowUp {
+  id                String   @id @default(cuid())
+  customerId        String
+  customer          Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  note              String
+  followUpType      String?
+  nextFollowUpDate  DateTime?
+  createdById       String
+  createdBy         User     @relation(fields: [createdById], references: [id])
+  createdAt         DateTime @default(now())
+
+  @@index([customerId, createdAt])
+}
+
+model Product {
+  id                         String          @id @default(cuid())
+  productName                String
+  sku                        String          @unique
+  category                   ProductCategory
+  unitPrice                  Decimal         @db.Decimal(12, 2)
+  currentStock               Int             @default(0)
+  minimumStockAlertQuantity  Int             @default(0)
+  warehouseLocation          String
+
+  brand                      String?
+  modelNumber                String?
+  wattage                    Int?
+  equipmentType              String?
+  warrantyYears              Int?
+
+  createdAt                  DateTime        @default(now())
+  updatedAt                  DateTime        @updatedAt
+
+  movements                  StockMovement[]
+  challanItems               SalesChallanItem[]
+
+  @@index([category])
+  @@index([productName])
+}
+
+model StockMovement {
+  id                String       @id @default(cuid())
+  productId         String
+  product           Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantityChanged   Int
+  movementType      MovementType
+  reason            String
+  referenceType     String?
+  referenceId       String?
+  createdById       String
+  createdBy         User         @relation(fields: [createdById], references: [id])
+  createdAt         DateTime     @default(now())
+
+  @@index([productId, createdAt])
+  @@index([createdAt])
+}
+
+model SalesChallan {
+  id                         String        @id @default(cuid())
+  challanNumber              String        @unique
+  customerId                 String
+  customer                   Customer      @relation(fields: [customerId], references: [id], onDelete: Restrict)
+  status                     ChallanStatus @default(DRAFT)
+  totalQuantity              Int           @default(0)
+  deliveryAddress            String
+  dispatchNotes              String?
+
+  installationSiteName       String?
+  projectReference           String?
+  proposedSystemCapacityKw   Decimal?      @db.Decimal(10, 2)
+  expectedDispatchDate       DateTime?
+
+  createdById                String
+  createdBy                  User          @relation(fields: [createdById], references: [id])
+  createdAt                  DateTime      @default(now())
+  updatedAt                  DateTime      @updatedAt
+  confirmedAt                DateTime?
+  cancelledAt                DateTime?
+
+  items                      SalesChallanItem[]
+
+  @@index([status])
+  @@index([customerId])
+  @@index([createdAt])
+}
+
+model SalesChallanItem {
+  id                    String       @id @default(cuid())
+  salesChallanId        String
+  salesChallan          SalesChallan @relation(fields: [salesChallanId], references: [id], onDelete: Cascade)
+  productId             String
+  product               Product      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  quantity              Int
+  productNameSnapshot   String
+  skuSnapshot           String
+  categorySnapshot      String
+  unitPriceSnapshot     Decimal      @db.Decimal(12, 2)
+
+  @@index([salesChallanId])
+}
